@@ -38,8 +38,8 @@ logger.addHandler(hdl1)
 logger.addHandler(hdl2)
 
 cap_img     = '/share/obs/obs.png'
-bt_macaddr  = 'BC:9E:BB:F4:07:13'
-webhook_url = 'https://discord.com/api/webhooks/637686494991089684/rzUsDWKFN5FLnpXq3JR9ZirvwbkE3hcV_w0z6Ixo7G5Om9cE6MWdMyJ6CHwWVipX_z-l'
+bt_macaddr  = 'AA:BB:CC:DD:EE:01'
+webhook_url = 'https://discord.com/api/webhooks/........'
 discord     = Discord(url=webhook_url)
 
 # OP画面を事前に用意したものと比較し、類似度を返す
