@@ -1,10 +1,18 @@
+# 使い方: python3 hatch_egg.py 孵化したいボックス数
+# 初期位置
+#   - オリーブ転がし場の中心付近でライドした状態
+#   - メニューは閉じておく
+#   - ボックスの位置を卵が連続した領域の先頭にしておく
+#   - 卵は1列ずつセットするため、最後のボックスが埋まらない場合は左側に詰めること
+# でHome押下->コントローラ->持ちかた/順番を変えるでAを押した状態
+# (コントローラの接続が解除される)
 import time, sys, os
 import logging
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-hdl1 = logging.FileHandler(filename='hatch.log')
+hdl1 = logging.FileHandler(filename='hatch_egg.log')
 hdl1.setLevel(logging.INFO)
 hdl1.setFormatter(logging.Formatter("%(asctime)s   %(message)s"))
 hdl2 = logging.StreamHandler()
