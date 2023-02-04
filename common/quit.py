@@ -3,8 +3,6 @@ from JoycontrolPlugin import JoycontrolPlugin
 
 logger = logging.getLogger(__name__)
 
-#スタート地点: ホーム画面から
-
 class quit(JoycontrolPlugin):
     async def button_ctl(self, *buttons, p_sec=0.05, w_sec=0.05):
         # ボタンの押下時間と解放後待機時間を指定する
