@@ -122,6 +122,9 @@ def get_seri():
                 msgs.append([x,y,w,h])
 
     ret = ''
+    # メッセージ枠が3つあれば処理
+    # move_camera_seriが動かなかった場合ここで止められるので、
+    # 気になる場合は2にする等してください
     if len(msgs) >= 3:
         for m in msgs:
             x,y,w,h = m
@@ -165,12 +168,14 @@ if __name__ == '__main__':
 
     while True:
         logger.info(f"ii = {ii}")
-        logger.info('\n\nOCR is running...\n\n')
+        logger.info('OCR is running...')
         while 1: # ウィンドウが出る前にキャプチャを拾ってしまった場合の対策
             ocr = get_seri()
             if ocr != '':
                 break
         tmp = ocr
+        ocr_for_disp = ocr.replace('\n','')
+        logger.info(f'ii={ii} ocr={ocr_for_disp}')
         for c in conv:
             tmp = tmp.replace(c[0], c[1])
         for t in target:
@@ -179,7 +184,7 @@ if __name__ == '__main__':
                 break
         if chk:
             logger.info(f'ii={ii} 対象アイテムが見つかりました！! ({t})')
-            discord.post(content=f'対象アイテムが見つかりました！(ii={ii}, {t})')
+            discord.post(content=f'@kata 対象アイテムが見つかりました！(ii={ii}, {t})')
             break
         logger.info('not found! quiting...')
         os.system(f'sudo joycontrol-pluginloader -r {bt_macaddr} common/quit.py')
