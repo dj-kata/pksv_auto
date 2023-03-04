@@ -56,7 +56,7 @@ def judge_startscreen():
     hist1 = cv2.calcHist([target],[2],None,[256],[0,256])
     hist2 = cv2.calcHist([img],[2],None,[256],[0,256])
     diff = cv2.compareHist(hist1,hist2,0)
-    logger.info(f"diff = {diff:.4f}")
+    #logger.info(f"diff = {diff:.4f}")
     return diff
 
 # 黒画面かどうかを判定する
@@ -70,7 +70,7 @@ def judge_black():
         if img is not None:
             break
     img = img[0:800,:]
-    logger.info(f"sum = {img.sum()}")
+    #logger.info(f"sum = {img.sum()}")
     ret = False
     if img.sum() < 100000:
         ret = True
@@ -195,6 +195,7 @@ if __name__ == '__main__':
         while True:
             st = judge_startscreen()
             if st > 0.94:
+                logger.info(f"diff = {st:.4f}")
                 break
             else:
                 time.sleep(0.5)
