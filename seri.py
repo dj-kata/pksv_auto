@@ -1,19 +1,6 @@
 #!/usr/bin/python3
-# 説明書: https://github.com/dj-kata/pksv_auto/wiki/seri.py%E3%81%AE%E4%BD%BF%E3%81%84%E6%96%B9
-# 初期位置: カメラ移動だけで3人のメッセージが見える位置
-# 1日前でセーブ&ゲーム終了 -> 1日後にして起動 -> メッセージが出た状態で開始
-# (ゲームの再起動だけでリセマラができる状態)
-# ->でHome押下->コントローラ->持ちかた/順番を変えるでAを押した状態
-# (コントローラの接続が解除される)
-
-# キャプチャ画像を/share/obs/obs.pngから取得する前提としているが、
-# 直接キャプチャボードを接続する場合はcv2.imread()の部分をカスタマイズすること。
-# コード通りにやるなら、OBSでキャプボ映像にScreenshot Filterを挿入して、
-# raspi4上のsamba共有ディレクトリに直接書いていけばよい
-# Screenshot FilterのDestinationはOutput to fileとする。
-
-# 濁音・半濁音の判定がかなり難しいため、全て清音に直してから判定している。
-# そのため、検出対象の文字列も「ラフラフ」などになっている
+# usage: $0 num_box(default=1)
+import nxbt
 
 from PIL import Image, ImageOps
 import sys, cv2, time, re
@@ -29,7 +16,7 @@ import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-hdl1 = logging.FileHandler(filename='seri.log')
+hdl1 = logging.FileHandler(filename='log/seri.log')
 hdl1.setLevel(logging.INFO)
 hdl1.setFormatter(logging.Formatter("%(asctime)s   %(message)s"))
 hdl2 = logging.StreamHandler()
@@ -38,8 +25,27 @@ hdl2.setFormatter(logging.Formatter("%(asctime)s   %(message)s"))
 logger.addHandler(hdl1)
 logger.addHandler(hdl2)
 
+num_box=1
+if len(sys.argv) > 1:
+    num_box = int(sys.argv[1])
+
+logger.info('ペアリング開始')
+
+# Start the NXBT service
+nx = nxbt.Nxbt()
+
+# Create a Pro Controller and wait for it to connect
+controller_index = nx.create_controller(nxbt.PRO_CONTROLLER)
+nx.wait_for_connection(controller_index)
+
+nx.press_buttons(controller_index, [nxbt.Buttons.B])
+time.sleep(2.0)
+nx.press_buttons(controller_index, [nxbt.Buttons.HOME])
+time.sleep(2.0)
+nx.press_buttons(controller_index, [nxbt.Buttons.HOME])
+time.sleep(2.0)
+
 cap_img     = '/share/obs/obs.png'
-bt_macaddr  = 'AA:BB:CC:DD:EE:01'
 webhook_url = 'https://discord.com/api/webhooks/........'
 discord     = Discord(url=webhook_url)
 
@@ -143,8 +149,35 @@ def get_seri():
     cv2.imwrite('input.png', img)
     return ret
 
-if __name__ == '__main__':
+def pk_start():
+    nx.press_buttons(controller_index, [nxbt.Buttons.A])
+    time.sleep(2.5)
+    nx.press_buttons(controller_index, [nxbt.Buttons.A])
+    time.sleep(1.4)
 
+def pk_quit():
+    nx.press_buttons(controller_index, [nxbt.Buttons.HOME])
+    time.sleep(0.9)
+    nx.press_buttons(controller_index, [nxbt.Buttons.X])
+    time.sleep(0.9)
+    nx.press_buttons(controller_index, [nxbt.Buttons.A])
+    time.sleep(4.4)
+
+def move_camera():
+    nx.tilt_stick(controller_index, nxbt.Sticks.RIGHT_STICK,  0,  -100, tilted=1.0)
+    time.sleep(0.3)
+
+def release_oneline():
+    for i in range(6):
+        release_one()
+        if i < 5:
+            nx.press_buttons(controller_index, [nxbt.Buttons.DPAD_RIGHT])
+            time.sleep(0.1)
+    for i in range(5):
+        nx.press_buttons(controller_index, [nxbt.Buttons.DPAD_LEFT])
+        time.sleep(0.1)
+
+def do():
     target=['ラフラフ', 'ルアー', 'レヘル', 'フレント', 'ヘヒー', 'ムーン','スヒート','トリーム']
     conv=[
         ['バ','ハ'],
@@ -163,9 +196,6 @@ if __name__ == '__main__':
     ]
     chk = False
     ii = 1
-
-    logger.info(f"コントローラのペアリングを開始")
-    os.system(f"sudo joycontrol-pluginloader -r {bt_macaddr} common/pairing.py")
 
     while True:
         logger.info(f"ii = {ii}")
@@ -188,10 +218,10 @@ if __name__ == '__main__':
             discord.post(content=f'@kata 対象アイテムが見つかりました！(ii={ii}, {t})')
             break
         logger.info('not found! quiting...')
-        os.system(f'sudo joycontrol-pluginloader -r {bt_macaddr} common/quit.py')
+        pk_quit()
         time.sleep(1)
         logger.info('resetting...')
-        os.system(f'sudo joycontrol-pluginloader -r {bt_macaddr} common/start.py')
+        pk_start()
         # タイトル画面を待つ
         while True:
             st = judge_startscreen()
@@ -201,7 +231,7 @@ if __name__ == '__main__':
             else:
                 time.sleep(0.5)
                 continue
-        os.system(f'sudo joycontrol-pluginloader -r {bt_macaddr} common/press_a.py')
+        nx.press_buttons(controller_index, [nxbt.Buttons.A])
         time.sleep(7) # 確実に黒画面に入るようにsleep
         # 黒画面終了を待つ
         while True:
@@ -211,5 +241,9 @@ if __name__ == '__main__':
             else:
                 time.sleep(0.5)
                 continue
-        os.system(f'sudo joycontrol-pluginloader -r {bt_macaddr} core/move_camera_seri.py')
+        move_camera()
         ii+=1
+
+    logger.info(f'完了しました！')
+
+do()
