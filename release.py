@@ -42,36 +42,47 @@ time.sleep(2.0)
 
 def release_one():
     nx.press_buttons(controller_index, [nxbt.Buttons.A])
+    time.sleep(0.1)
     nx.press_buttons(controller_index, [nxbt.Buttons.DPAD_UP])
+    time.sleep(0.1)
     nx.press_buttons(controller_index, [nxbt.Buttons.DPAD_UP])
+    time.sleep(0.1)
     nx.press_buttons(controller_index, [nxbt.Buttons.A])
-    time.sleep(0.5)
+    time.sleep(0.7)
     nx.press_buttons(controller_index, [nxbt.Buttons.DPAD_UP])
+    time.sleep(0.1)
+    nx.press_buttons(controller_index, [nxbt.Buttons.A])
+    time.sleep(1.3)
     nx.press_buttons(controller_index, [nxbt.Buttons.A])
     time.sleep(1.0)
-    nx.press_buttons(controller_index, [nxbt.Buttons.A])
-    time.sleep(0.5)
 
 def release_oneline():
     for i in range(6):
         release_one()
         if i < 5:
             nx.press_buttons(controller_index, [nxbt.Buttons.DPAD_RIGHT])
+            time.sleep(0.1)
     for i in range(5):
         nx.press_buttons(controller_index, [nxbt.Buttons.DPAD_LEFT])
+        time.sleep(0.1)
 
-logger.info('孵化開始')
-for i in range(num_box):
-    logger.info(f"i,j = ({i},0), release_line")
-    release_oneline()
-    for j in range(4):
-        nx.press_buttons(controller_index, [nxbt.Buttons.DPAD_DOWN])
-        logger.info(f"i,j = ({i},{j+1}), release_line")
+def release_box(num_box):
+    logger.info('孵化開始')
+    for i in range(num_box):
+        logger.info(f"i,j = ({i},0), release_line")
         release_oneline()
-    # 次のボックスへ移動
-    for j in range(4):
-        nx.press_buttons(controller_index, [nxbt.Buttons.DPAD_UP])
-    nx.press_buttons(controller_index, [nxbt.Buttons.R])
-    time.sleep(2)
+        for j in range(4):
+            nx.press_buttons(controller_index, [nxbt.Buttons.DPAD_DOWN])
+            time.sleep(0.1)
+            logger.info(f"i,j = ({i},{j+1}), release_line")
+            release_oneline()
+        # 次のボックスへ移動
+        for j in range(4):
+            nx.press_buttons(controller_index, [nxbt.Buttons.DPAD_UP])
+            time.sleep(0.1)
+        nx.press_buttons(controller_index, [nxbt.Buttons.R])
+        time.sleep(2)
 
-logger.info(f'完了しました！')
+    logger.info(f'完了しました！')
+
+release_box(num_box)
